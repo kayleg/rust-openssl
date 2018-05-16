@@ -1,18 +1,18 @@
-use libc::{c_void, c_char, c_int, size_t};
-use std::ptr;
-use std::mem;
-use std::ffi::CString;
 use ffi;
 use foreign_types::{ForeignType, ForeignTypeRef};
+use libc::{c_char, c_int, c_void, size_t};
+use std::ffi::CString;
+use std::mem;
+use std::ptr;
 
-use {cvt, cvt_p};
 use bio::MemBioSlice;
 use dh::Dh;
 use dsa::Dsa;
 use ec::EcKey;
-use rsa::{Rsa, Padding};
 use error::ErrorStack;
-use util::{CallbackState, invoke_passwd_cb, invoke_passwd_cb_old};
+use rsa::{Padding, Rsa};
+use util::{invoke_passwd_cb, invoke_passwd_cb_old, CallbackState};
+use {cvt, cvt_p};
 
 foreign_type_and_impl_send_sync! {
     type CType = ffi::EVP_PKEY;
@@ -254,9 +254,7 @@ impl PKeyCtxRef {
     pub fn rsa_padding(&self) -> Result<Padding, ErrorStack> {
         let mut pad: c_int = 0;
         unsafe {
-            cvt(
-                ffi::EVP_PKEY_CTX_get_rsa_padding(self.as_ptr(), &mut pad),
-            )?;
+            cvt(ffi::EVP_PKEY_CTX_get_rsa_padding(self.as_ptr(), &mut pad))?;
         };
         Ok(Padding::from_raw(pad))
     }
@@ -270,9 +268,7 @@ impl PKeyCtxRef {
 
     pub fn derive_set_peer(&mut self, peer: &PKeyRef) -> Result<(), ErrorStack> {
         unsafe {
-            cvt(
-                ffi::EVP_PKEY_derive_set_peer(self.as_ptr(), peer.as_ptr()),
-            )?;
+            cvt(ffi::EVP_PKEY_derive_set_peer(self.as_ptr(), peer.as_ptr()))?;
         }
         Ok(())
     }
@@ -301,12 +297,12 @@ impl PKeyCtxRef {
 
 #[cfg(test)]
 mod tests {
-    use symm::Cipher;
     use dh::Dh;
     use dsa::Dsa;
     use ec::{EcGroup, EcKey};
-    use rsa::Rsa;
     use nid;
+    use rsa::Rsa;
+    use symm::Cipher;
 
     use super::*;
 

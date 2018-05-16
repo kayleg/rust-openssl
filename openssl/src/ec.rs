@@ -33,14 +33,14 @@
 //! ```
 use ffi;
 use foreign_types::{ForeignType, ForeignTypeRef};
-use std::ptr;
-use std::mem;
 use libc::c_int;
+use std::mem;
+use std::ptr;
 
-use {cvt, cvt_n, cvt_p, init};
-use bn::{BigNumRef, BigNumContextRef};
+use bn::{BigNumContextRef, BigNumRef};
 use error::ErrorStack;
 use nid::Nid;
+use {cvt, cvt_n, cvt_p, init};
 
 /// Compressed conversion from point value (Default)
 pub const POINT_CONVERSION_COMPRESSED: PointConversionForm =
@@ -645,7 +645,6 @@ impl EcKey {
     private_key_from_der!(EcKey, ffi::d2i_ECPrivateKey);
 }
 
-
 foreign_type_and_impl_send_sync! {
     type CType = ffi::EC_KEY;
     fn drop = ffi::EC_KEY_free;
@@ -730,10 +729,10 @@ impl EcKeyBuilderRef {
 
 #[cfg(test)]
 mod test {
-    use bn::{BigNum, BigNumContext};
-    use nid;
-    use data_encoding::BASE64URL_NOPAD;
     use super::*;
+    use bn::{BigNum, BigNumContext};
+    use data_encoding::BASE64URL_NOPAD;
+    use nid;
 
     #[test]
     fn key_new_by_curve_name() {
@@ -811,12 +810,12 @@ mod test {
     #[test]
     fn key_from_affine_coordinates() {
         let group = EcGroup::from_curve_name(nid::X9_62_PRIME256V1).unwrap();
-        let x = BASE64URL_NOPAD.decode(
-            "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4".as_bytes(),
-        ).unwrap();
-        let y = BASE64URL_NOPAD.decode(
-            "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM".as_bytes(),
-        ).unwrap();
+        let x = BASE64URL_NOPAD
+            .decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4".as_bytes())
+            .unwrap();
+        let y = BASE64URL_NOPAD
+            .decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM".as_bytes())
+            .unwrap();
 
         let xbn = BigNum::from_slice(&x).unwrap();
         let ybn = BigNum::from_slice(&y).unwrap();
@@ -835,9 +834,9 @@ mod test {
     #[test]
     fn set_private_key() {
         let group = EcGroup::from_curve_name(nid::X9_62_PRIME256V1).unwrap();
-        let d = BASE64URL_NOPAD.decode(
-            "870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE".as_bytes(),
-        ).unwrap();
+        let d = BASE64URL_NOPAD
+            .decode("870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE".as_bytes())
+            .unwrap();
 
         let dbn = BigNum::from_slice(&d).unwrap();
 
@@ -852,12 +851,12 @@ mod test {
     #[test]
     fn get_affine_coordinates() {
         let group = EcGroup::from_curve_name(nid::X9_62_PRIME256V1).unwrap();
-        let x = BASE64URL_NOPAD.decode(
-            "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4".as_bytes(),
-        ).unwrap();
-        let y = BASE64URL_NOPAD.decode(
-            "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM".as_bytes(),
-        ).unwrap();
+        let x = BASE64URL_NOPAD
+            .decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4".as_bytes())
+            .unwrap();
+        let y = BASE64URL_NOPAD
+            .decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM".as_bytes())
+            .unwrap();
 
         let xbn = BigNum::from_slice(&x).unwrap();
         let ybn = BigNum::from_slice(&y).unwrap();

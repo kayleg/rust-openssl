@@ -1,11 +1,12 @@
+use ffi::{
+    BIO_clear_retry_flags, BIO_new, BIO_set_retry_read, BIO_set_retry_write, BIO, BIO_CTRL_FLUSH,
+};
 use libc::{c_char, c_int, c_long, c_void, strlen};
-use ffi::{BIO, BIO_CTRL_FLUSH, BIO_new, BIO_clear_retry_flags, BIO_set_retry_read,
-          BIO_set_retry_write};
 use std::any::Any;
 use std::io;
 use std::io::prelude::*;
 use std::mem;
-use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::ptr;
 use std::slice;
 
@@ -117,8 +118,7 @@ unsafe extern "C" fn bread<S: Read>(bio: *mut BIO, buf: *mut c_char, len: c_int)
 
 fn retriable_error(err: &io::Error) -> bool {
     match err.kind() {
-        io::ErrorKind::WouldBlock |
-        io::ErrorKind::NotConnected => true,
+        io::ErrorKind::WouldBlock | io::ErrorKind::NotConnected => true,
         _ => false,
     }
 }
@@ -178,9 +178,9 @@ unsafe extern "C" fn destroy<S>(bio: *mut BIO) -> c_int {
 mod compat {
     use std::io::{Read, Write};
 
-    use libc::c_int;
     use ffi;
-    pub use ffi::{BIO_set_init, BIO_set_flags, BIO_set_data, BIO_get_data};
+    pub use ffi::{BIO_get_data, BIO_set_data, BIO_set_flags, BIO_set_init};
+    use libc::c_int;
 
     pub unsafe fn BIO_set_num(_bio: *mut ffi::BIO, _num: c_int) {}
 

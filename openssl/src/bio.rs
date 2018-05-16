@@ -1,8 +1,8 @@
+use ffi;
+use libc::c_int;
 use std::marker::PhantomData;
 use std::ptr;
 use std::slice;
-use libc::c_int;
-use ffi;
 
 use cvt_p;
 use error::ErrorStack;

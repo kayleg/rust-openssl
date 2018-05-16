@@ -1,15 +1,15 @@
 use ffi;
-use std::fmt;
-use std::ptr;
-use std::mem;
-use libc::{c_int, c_void, c_char};
 use foreign_types::ForeignTypeRef;
+use libc::{c_char, c_int, c_void};
+use std::fmt;
+use std::mem;
+use std::ptr;
 
-use {cvt, cvt_p, cvt_n};
-use bn::{BigNum, BigNumRef};
 use bio::MemBioSlice;
+use bn::{BigNum, BigNumRef};
 use error::ErrorStack;
-use util::{CallbackState, invoke_passwd_cb_old};
+use util::{invoke_passwd_cb_old, CallbackState};
+use {cvt, cvt_n, cvt_p};
 
 /// Type of encryption padding to use.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -286,9 +286,7 @@ impl Rsa {
     ) -> Result<Rsa, ErrorStack> {
         unsafe {
             let rsa = Rsa(cvt_p(ffi::RSA_new())?);
-            cvt(
-                compat::set_key(rsa.0, n.as_ptr(), e.as_ptr(), d.as_ptr()),
-            )?;
+            cvt(compat::set_key(rsa.0, n.as_ptr(), e.as_ptr(), d.as_ptr()))?;
             mem::forget((n, e, d));
             cvt(compat::set_factors(rsa.0, p.as_ptr(), q.as_ptr()))?;
             mem::forget((p, q));
@@ -407,8 +405,8 @@ mod compat {
 
 #[cfg(ossl10x)]
 mod compat {
-    use libc::c_int;
     use ffi::{BIGNUM, RSA};
+    use libc::c_int;
 
     pub unsafe fn key(r: *const RSA) -> [*const BIGNUM; 3] {
         [(*r).n, (*r).e, (*r).d]

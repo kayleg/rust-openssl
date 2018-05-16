@@ -47,8 +47,8 @@
 //! #   decrypt();
 //! # }
 use ffi;
-use std::mem;
 use libc::c_int;
+use std::mem;
 
 use symm::Mode;
 
@@ -151,8 +151,8 @@ pub fn aes_ige(in_: &[u8], out: &mut [u8], key: &AesKey, iv: &mut [u8], mode: Mo
 mod test {
     use hex::FromHex;
 
-    use symm::Mode;
     use super::*;
+    use symm::Mode;
 
     // From https://www.mgp25.com/AESIGE/
     #[test]

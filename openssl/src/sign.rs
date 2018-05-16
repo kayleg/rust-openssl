@@ -67,15 +67,15 @@ use std::io::{self, Write};
 use std::marker::PhantomData;
 use std::ptr;
 
-use {cvt, cvt_p};
+use error::ErrorStack;
 use hash::MessageDigest;
 use pkey::{PKeyCtxRef, PKeyRef};
-use error::ErrorStack;
+use {cvt, cvt_p};
 
-#[cfg(ossl110)]
-use ffi::{EVP_MD_CTX_free, EVP_MD_CTX_new};
 #[cfg(any(ossl101, ossl102))]
 use ffi::{EVP_MD_CTX_create as EVP_MD_CTX_new, EVP_MD_CTX_destroy as EVP_MD_CTX_free};
+#[cfg(ossl110)]
+use ffi::{EVP_MD_CTX_free, EVP_MD_CTX_new};
 
 /// A type which computes cryptographic signatures of data.
 pub struct Signer<'a> {
@@ -350,13 +350,13 @@ mod test {
     use hex::{FromHex, ToHex};
     use std::iter;
 
-    use hash::MessageDigest;
-    use sign::{Signer, Verifier};
-    use ec::{EcGroup, EcKey};
-    use nid;
-    use rsa::{PKCS1_PADDING, Rsa};
     use dsa::Dsa;
+    use ec::{EcGroup, EcKey};
+    use hash::MessageDigest;
+    use nid;
     use pkey::PKey;
+    use rsa::{PKCS1_PADDING, Rsa};
+    use sign::{Signer, Verifier};
 
     const INPUT: &'static str =
         "65794a68624763694f694a53557a49314e694a392e65794a7063334d694f694a71623255694c41304b49434a6c\

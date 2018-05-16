@@ -26,17 +26,17 @@
 //! ```
 use ffi;
 use foreign_types::{ForeignType, ForeignTypeRef};
-use libc::{c_long, c_char, c_int};
+use libc::{c_char, c_int, c_long};
 use std::fmt;
 use std::ptr;
 use std::slice;
 use std::str;
 
-use {cvt, cvt_p};
 use bio::MemBio;
 use error::ErrorStack;
 use nid::Nid;
 use string::OpensslString;
+use {cvt, cvt_p};
 
 foreign_type_and_impl_send_sync! {
     type CType = ffi::ASN1_GENERALIZEDTIME;

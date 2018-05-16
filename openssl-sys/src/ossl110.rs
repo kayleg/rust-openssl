@@ -1,6 +1,6 @@
-use libc::{c_int, c_void, c_char, c_uchar, c_ulong, c_long, c_uint, size_t};
-use std::sync::{Once, ONCE_INIT};
+use libc::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_void, size_t};
 use std::ptr;
+use std::sync::{Once, ONCE_INIT};
 
 pub enum BIGNUM {}
 pub enum BIO {}

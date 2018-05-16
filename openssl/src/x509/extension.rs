@@ -2,7 +2,7 @@ use std::fmt::{self, Write};
 
 use error::ErrorStack;
 use nid::{self, Nid};
-use x509::{X509v3Context, X509Extension};
+use x509::{X509Extension, X509v3Context};
 
 /// Type-only version of the `Extension` enum.
 ///
@@ -112,22 +112,18 @@ impl ToString for Extension {
         match self {
             &Extension::KeyUsage(ref purposes) => join(purposes.iter(), ","),
             &Extension::ExtKeyUsage(ref purposes) => join(purposes.iter(), ","),
-            &Extension::SubjectAltName(ref names) => {
-                join(
-                    names.iter().map(|&(ref opt, ref val)| {
-                        opt.to_string() + ":" + &val
-                    }),
-                    ",",
-                )
-            }
-            &Extension::IssuerAltName(ref names) => {
-                join(
-                    names.iter().map(|&(ref opt, ref val)| {
-                        opt.to_string() + ":" + &val
-                    }),
-                    ",",
-                )
-            }
+            &Extension::SubjectAltName(ref names) => join(
+                names
+                    .iter()
+                    .map(|&(ref opt, ref val)| opt.to_string() + ":" + &val),
+                ",",
+            ),
+            &Extension::IssuerAltName(ref names) => join(
+                names
+                    .iter()
+                    .map(|&(ref opt, ref val)| opt.to_string() + ":" + &val),
+                ",",
+            ),
             &Extension::OtherNid(_, ref value) => value.clone(),
             &Extension::OtherStr(_, ref value) => value.clone(),
         }

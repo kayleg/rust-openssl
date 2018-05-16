@@ -5,15 +5,15 @@
 //! generated from a `Vec` of bytes.  This `Vec` follows the smime protocol standards.
 //! Data accepted by this module will be smime type `enveloped-data`.
 
+use error::ErrorStack;
 use ffi;
 use foreign_types::{ForeignType, ForeignTypeRef};
 use std::ptr;
-use error::ErrorStack;
 
 use bio::{MemBio, MemBioSlice};
 
-use x509::X509;
 use pkey::PKeyRef;
+use x509::X509;
 
 use cvt;
 use cvt_p;
@@ -63,7 +63,6 @@ impl CmsContentInfoRef {
             Ok(out.get_buf().to_owned())
         }
     }
-
 }
 
 impl CmsContentInfo {
@@ -76,10 +75,7 @@ impl CmsContentInfo {
         unsafe {
             let bio = MemBioSlice::new(smime)?;
 
-            let cms = cvt_p(ffi::SMIME_read_CMS(
-                bio.as_ptr(),
-                ptr::null_mut(),
-            ))?;
+            let cms = cvt_p(ffi::SMIME_read_CMS(bio.as_ptr(), ptr::null_mut()))?;
 
             Ok(CmsContentInfo::from_ptr(cms))
         }

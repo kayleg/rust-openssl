@@ -1,15 +1,15 @@
+extern crate cc;
 extern crate pkg_config;
 #[cfg(target_env = "msvc")]
 extern crate vcpkg;
-extern crate cc;
 
 use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufWriter, Write};
-use std::path::{Path, PathBuf};
 use std::panic::{self, AssertUnwindSafe};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 // The set of `OPENSSL_NO_<FOO>`s that we care about.
@@ -89,16 +89,14 @@ fn main() {
     let libs_env = env("OPENSSL_LIBS");
     let libs = match libs_env.as_ref().and_then(|s| s.to_str()) {
         Some(ref v) => v.split(":").collect(),
-        None => {
-            match version {
-                Version::Openssl101 |
-                Version::Openssl102 if target.contains("windows") => vec!["ssleay32", "libeay32"],
-                Version::Openssl110 if target.contains("windows") => vec!["libssl", "libcrypto"],
-                _ => vec!["ssl", "crypto"],
+        None => match version {
+            Version::Openssl101 | Version::Openssl102 if target.contains("windows") => {
+                vec!["ssleay32", "libeay32"]
             }
-        }
+            Version::Openssl110 if target.contains("windows") => vec!["libssl", "libcrypto"],
+            _ => vec!["ssl", "crypto"],
+        },
     };
-
 
     let kind = determine_mode(Path::new(&lib_dir), &libs);
     for lib in libs.into_iter() {
@@ -228,9 +226,10 @@ fn try_pkg_config() {
         return;
     }
 
-    let lib = match pkg_config::Config::new().print_system_libs(false).find(
-        "openssl",
-    ) {
+    let lib = match pkg_config::Config::new()
+        .print_system_libs(false)
+        .find("openssl")
+    {
         Ok(lib) => lib,
         Err(e) => {
             println!("run pkg_config fail: {:?}", e);
@@ -253,7 +252,6 @@ fn try_pkg_config() {
 /// should emit all of the cargo metadata that we need.
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() {
-
     // vcpkg will not emit any metadata if it can not find libraries
     // appropriate for the target triple with the desired linkage.
 
@@ -264,8 +262,10 @@ fn try_vcpkg() {
         .probe("openssl");
 
     if let Err(e) = lib {
-        println!("note: vcpkg did not find openssl as libcrypto and libssl : {:?}",
-                 e);
+        println!(
+            "note: vcpkg did not find openssl as libcrypto and libssl : {:?}",
+            e
+        );
         lib = vcpkg::Config::new()
             .emit_includes(true)
             .lib_name("libeay32")
@@ -273,8 +273,10 @@ fn try_vcpkg() {
             .probe("openssl");
     }
     if let Err(e) = lib {
-        println!("note: vcpkg did not find openssl as ssleay32 and libeay32: {:?}",
-                 e);
+        println!(
+            "note: vcpkg did not find openssl as ssleay32 and libeay32: {:?}",
+            e
+        );
         return;
     }
 
@@ -516,12 +518,11 @@ fn determine_mode(libdir: &Path, libs: &[&str]) -> &'static str {
         .map(|e| e.file_name())
         .filter_map(|e| e.into_string().ok())
         .collect::<HashSet<_>>();
-    let can_static = libs.iter().all(|l| {
-        files.contains(&format!("lib{}.a", l)) || files.contains(&format!("{}.lib", l))
-    });
+    let can_static = libs.iter()
+        .all(|l| files.contains(&format!("lib{}.a", l)) || files.contains(&format!("{}.lib", l)));
     let can_dylib = libs.iter().all(|l| {
-        files.contains(&format!("lib{}.so", l)) || files.contains(&format!("{}.dll", l)) ||
-            files.contains(&format!("lib{}.dylib", l))
+        files.contains(&format!("lib{}.so", l)) || files.contains(&format!("{}.dll", l))
+            || files.contains(&format!("lib{}.dylib", l))
     });
     match (can_static, can_dylib) {
         (true, false) => return "static",
@@ -529,7 +530,7 @@ fn determine_mode(libdir: &Path, libs: &[&str]) -> &'static str {
         (false, false) => {
             panic!(
                 "OpenSSL libdir at `{}` does not contain the required files \
-                    to either statically or dynamically link OpenSSL",
+                 to either statically or dynamically link OpenSSL",
                 libdir.display()
             );
         }

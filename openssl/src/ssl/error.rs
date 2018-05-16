@@ -120,8 +120,7 @@ impl<S: Any + fmt::Debug> StdError for HandshakeError<S> {
     fn cause(&self) -> Option<&StdError> {
         match *self {
             HandshakeError::SetupFailure(ref e) => Some(e),
-            HandshakeError::Failure(ref s) |
-            HandshakeError::Interrupted(ref s) => Some(s.error()),
+            HandshakeError::Failure(ref s) | HandshakeError::Interrupted(ref s) => Some(s.error()),
         }
     }
 }
@@ -131,8 +130,7 @@ impl<S: Any + fmt::Debug> fmt::Display for HandshakeError<S> {
         f.write_str(StdError::description(self))?;
         match *self {
             HandshakeError::SetupFailure(ref e) => write!(f, ": {}", e)?,
-            HandshakeError::Failure(ref s) |
-            HandshakeError::Interrupted(ref s) => {
+            HandshakeError::Failure(ref s) | HandshakeError::Interrupted(ref s) => {
                 write!(f, ": {}", s.error())?;
                 if let Some(err) = s.ssl().verify_result() {
                     write!(f, ": {}", err)?;

@@ -1,8 +1,8 @@
 use ffi;
 use foreign_types::{ForeignType, ForeignTypeRef};
 use libc::{c_char, c_void};
-use std::fmt;
 use std::ffi::CStr;
+use std::fmt;
 use std::ops::Deref;
 use std::str;
 

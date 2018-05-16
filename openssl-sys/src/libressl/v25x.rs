@@ -1,4 +1,4 @@
-use libc::{c_int, c_char, c_void, c_long, c_uchar, size_t, c_uint, c_ulong, time_t};
+use libc::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_void, size_t, time_t};
 
 use super::*;
 

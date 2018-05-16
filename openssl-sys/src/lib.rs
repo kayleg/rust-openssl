@@ -1,12 +1,12 @@
 #![allow(non_camel_case_types, non_upper_case_globals, non_snake_case)]
 #![allow(dead_code, overflowing_literals)]
-#![doc(html_root_url="https://docs.rs/openssl-sys/0.9")]
+#![doc(html_root_url = "https://docs.rs/openssl-sys/0.9")]
 
 extern crate libc;
 
-use libc::{c_void, c_int, c_char, c_ulong, c_long, c_uint, c_uchar, size_t, FILE};
-use std::ptr;
+use libc::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_void, size_t, FILE};
 use std::mem;
+use std::ptr;
 
 #[cfg(any(ossl101, ossl102))]
 mod ossl10x;
@@ -65,33 +65,21 @@ pub enum BN_BLINDING {}
 pub enum DSA_METHOD {}
 pub enum EVP_PKEY_ASN1_METHOD {}
 
-pub type bio_info_cb = Option<
-    unsafe extern "C" fn(*mut BIO,
-                         c_int,
-                         *const c_char,
-                         c_int,
-                         c_long,
-                         c_long),
->;
-pub type GEN_SESSION_CB = Option<
-    unsafe extern "C" fn(*const SSL, *mut c_uchar, *mut c_uint)
-                         -> c_int,
->;
-pub type tls_session_ticket_ext_cb_fn = Option<
-    unsafe extern "C" fn(*mut SSL,
-                         *const c_uchar,
-                         c_int,
-                         *mut c_void)
-                         -> c_int,
->;
+pub type bio_info_cb =
+    Option<unsafe extern "C" fn(*mut BIO, c_int, *const c_char, c_int, c_long, c_long)>;
+pub type GEN_SESSION_CB =
+    Option<unsafe extern "C" fn(*const SSL, *mut c_uchar, *mut c_uint) -> c_int>;
+pub type tls_session_ticket_ext_cb_fn =
+    Option<unsafe extern "C" fn(*mut SSL, *const c_uchar, c_int, *mut c_void) -> c_int>;
 pub type tls_session_secret_cb_fn = Option<
-    unsafe extern "C" fn(*mut SSL,
-                         *mut c_void,
-                         *mut c_int,
-                         *mut stack_st_SSL_CIPHER,
-                         *mut *mut SSL_CIPHER,
-                         *mut c_void)
-                         -> c_int,
+    unsafe extern "C" fn(
+        *mut SSL,
+        *mut c_void,
+        *mut c_int,
+        *mut stack_st_SSL_CIPHER,
+        *mut *mut SSL_CIPHER,
+        *mut c_void,
+    ) -> c_int,
 >;
 
 #[repr(C)]
@@ -167,31 +155,33 @@ pub type BN_ULONG = libc::c_ulonglong;
 #[cfg(target_pointer_width = "32")]
 pub type BN_ULONG = c_uint;
 
-pub type CRYPTO_EX_new = unsafe extern "C" fn(parent: *mut c_void,
-                                              ptr: *mut c_void,
-                                              ad: *const CRYPTO_EX_DATA,
-                                              idx: c_int,
-                                              argl: c_long,
-                                              argp: *const c_void)
-                                              -> c_int;
-pub type CRYPTO_EX_dup = unsafe extern "C" fn(to: *mut CRYPTO_EX_DATA,
-                                              from: *mut CRYPTO_EX_DATA,
-                                              from_d: *mut c_void,
-                                              idx: c_int,
-                                              argl: c_long,
-                                              argp: *mut c_void)
-                                              -> c_int;
-pub type CRYPTO_EX_free = unsafe extern "C" fn(parent: *mut c_void,
-                                               ptr: *mut c_void,
-                                               ad: *mut CRYPTO_EX_DATA,
-                                               idx: c_int,
-                                               argl: c_long,
-                                               argp: *mut c_void);
-pub type PasswordCallback = unsafe extern "C" fn(buf: *mut c_char,
-                                                 size: c_int,
-                                                 rwflag: c_int,
-                                                 user_data: *mut c_void)
-                                                 -> c_int;
+pub type CRYPTO_EX_new = unsafe extern "C" fn(
+    parent: *mut c_void,
+    ptr: *mut c_void,
+    ad: *const CRYPTO_EX_DATA,
+    idx: c_int,
+    argl: c_long,
+    argp: *const c_void,
+) -> c_int;
+pub type CRYPTO_EX_dup = unsafe extern "C" fn(
+    to: *mut CRYPTO_EX_DATA,
+    from: *mut CRYPTO_EX_DATA,
+    from_d: *mut c_void,
+    idx: c_int,
+    argl: c_long,
+    argp: *mut c_void,
+) -> c_int;
+pub type CRYPTO_EX_free = unsafe extern "C" fn(
+    parent: *mut c_void,
+    ptr: *mut c_void,
+    ad: *mut CRYPTO_EX_DATA,
+    idx: c_int,
+    argl: c_long,
+    argp: *mut c_void,
+);
+pub type PasswordCallback =
+    unsafe extern "C" fn(buf: *mut c_char, size: c_int, rwflag: c_int, user_data: *mut c_void)
+        -> c_int;
 
 pub type SHA_LONG = c_uint;
 pub type SHA_LONG64 = u64;
@@ -1265,9 +1255,9 @@ pub const SSL_OP_SAFARI_ECDHE_ECDSA_BUG: c_ulong = 0x00000040;
 #[cfg(not(any(libressl, ossl110f)))]
 pub const SSL_OP_ALL: c_ulong = 0x80000BFF;
 #[cfg(ossl110f)]
-pub const SSL_OP_ALL: c_ulong = SSL_OP_CRYPTOPRO_TLSEXT_BUG | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS |
-    SSL_OP_LEGACY_SERVER_CONNECT | SSL_OP_TLSEXT_PADDING |
-    SSL_OP_SAFARI_ECDHE_ECDSA_BUG;
+pub const SSL_OP_ALL: c_ulong = SSL_OP_CRYPTOPRO_TLSEXT_BUG | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
+    | SSL_OP_LEGACY_SERVER_CONNECT | SSL_OP_TLSEXT_PADDING
+    | SSL_OP_SAFARI_ECDHE_ECDSA_BUG;
 pub const SSL_OP_NO_QUERY_MTU: c_ulong = 0x00001000;
 pub const SSL_OP_COOKIE_EXCHANGE: c_ulong = 0x00002000;
 pub const SSL_OP_NO_TICKET: c_ulong = 0x00004000;
@@ -1291,8 +1281,8 @@ pub const SSL_OP_NO_DTLSv1: c_ulong = 0x04000000;
 #[cfg(not(any(ossl101, libressl)))]
 pub const SSL_OP_NO_DTLSv1_2: c_ulong = 0x08000000;
 #[cfg(not(any(ossl101, libressl)))]
-pub const SSL_OP_NO_SSL_MASK: c_ulong = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 |
-    SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1_2;
+pub const SSL_OP_NO_SSL_MASK: c_ulong =
+    SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1_2;
 
 pub const TLSEXT_NAMETYPE_host_name: c_int = 0;
 
@@ -2425,35 +2415,32 @@ extern "C" {
 
     pub fn SSL_CTX_set_next_protos_advertised_cb(
         ssl: *mut SSL_CTX,
-        cb: extern "C" fn(ssl: *mut SSL,
-                          out: *mut *const c_uchar,
-                          outlen: *mut c_uint,
-                          arg: *mut c_void)
-                          -> c_int,
+        cb: extern "C" fn(
+            ssl: *mut SSL,
+            out: *mut *const c_uchar,
+            outlen: *mut c_uint,
+            arg: *mut c_void,
+        ) -> c_int,
         arg: *mut c_void,
     );
     pub fn SSL_CTX_set_next_proto_select_cb(
         ssl: *mut SSL_CTX,
-        cb: extern "C" fn(ssl: *mut SSL,
-                          out: *mut *mut c_uchar,
-                          outlen: *mut c_uchar,
-                          inbuf: *const c_uchar,
-                          inlen: c_uint,
-                          arg: *mut c_void)
-                          -> c_int,
+        cb: extern "C" fn(
+            ssl: *mut SSL,
+            out: *mut *mut c_uchar,
+            outlen: *mut c_uchar,
+            inbuf: *const c_uchar,
+            inlen: c_uint,
+            arg: *mut c_void,
+        ) -> c_int,
         arg: *mut c_void,
     );
     #[cfg(not(osslconf = "OPENSSL_NO_PSK"))]
     pub fn SSL_CTX_set_psk_client_callback(
         ssl: *mut SSL_CTX,
         psk_client_cb: Option<
-            extern "C" fn(*mut SSL,
-                          *const c_char,
-                          *mut c_char,
-                          c_uint,
-                          *mut c_uchar,
-                          c_uint)
-                          -> c_uint,
+            extern "C" fn(*mut SSL, *const c_char, *mut c_char, c_uint, *mut c_uchar, c_uint)
+                -> c_uint,
         >,
     );
     pub fn SSL_select_next_proto(
@@ -2488,13 +2475,14 @@ extern "C" {
     #[cfg(not(ossl101))]
     pub fn SSL_CTX_set_alpn_select_cb(
         ssl: *mut SSL_CTX,
-        cb: extern "C" fn(ssl: *mut SSL,
-                          out: *mut *const c_uchar,
-                          outlen: *mut c_uchar,
-                          inbuf: *const c_uchar,
-                          inlen: c_uint,
-                          arg: *mut c_void)
-                          -> c_int,
+        cb: extern "C" fn(
+            ssl: *mut SSL,
+            out: *mut *const c_uchar,
+            outlen: *mut c_uchar,
+            inbuf: *const c_uchar,
+            inlen: c_uint,
+            arg: *mut c_void,
+        ) -> c_int,
         arg: *mut c_void,
     );
     #[cfg(not(ossl101))]

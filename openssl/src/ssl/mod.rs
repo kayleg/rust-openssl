@@ -92,32 +92,33 @@ use std::slice;
 use std::str;
 use std::sync::Mutex;
 
-use {cvt, cvt_n, cvt_p, init};
 use dh::{Dh, DhRef};
-use ec::EcKeyRef;
 #[cfg(any(all(feature = "v101", ossl101), all(feature = "v102", ossl102)))]
 use ec::EcKey;
-use x509::{X509, X509FileType, X509Name, X509Ref, X509StoreContextRef, X509VerifyError};
-use x509::store::{X509StoreBuilderRef, X509StoreRef};
-#[cfg(any(all(feature = "v102", ossl102), all(feature = "v110", ossl110)))]
-use x509::store::X509Store;
-#[cfg(any(ossl102, ossl110))]
-use verify::X509VerifyParamRef;
-use pkey::PKeyRef;
+use ec::EcKeyRef;
 use error::ErrorStack;
 use ex_data::Index;
-use stack::{Stack, StackRef};
+use pkey::PKeyRef;
 use ssl::bio::BioMethod;
 use ssl::callbacks::*;
+use stack::{Stack, StackRef};
+#[cfg(any(ossl102, ossl110))]
+use verify::X509VerifyParamRef;
+#[cfg(any(all(feature = "v102", ossl102), all(feature = "v110", ossl110)))]
+use x509::store::X509Store;
+use x509::store::{X509StoreBuilderRef, X509StoreRef};
+use x509::{X509, X509FileType, X509Name, X509Ref, X509StoreContextRef, X509VerifyError};
+use {cvt, cvt_n, cvt_p, init};
 
-pub use ssl::connector::{ConnectConfiguration, SslAcceptor, SslAcceptorBuilder, SslConnector,
-                         SslConnectorBuilder};
+pub use ssl::connector::{
+    ConnectConfiguration, SslAcceptor, SslAcceptorBuilder, SslConnector, SslConnectorBuilder,
+};
 pub use ssl::error::{Error, HandshakeError, RetryError};
 
-mod error;
+mod bio;
 mod callbacks;
 mod connector;
-mod bio;
+mod error;
 #[cfg(test)]
 mod tests;
 
@@ -582,8 +583,7 @@ impl SslContextBuilder {
     pub fn set_verify_cert_store(&mut self, cert_store: X509Store) -> Result<(), ErrorStack> {
         unsafe {
             let ptr = cert_store.as_ptr();
-            cvt(ffi::SSL_CTX_set0_verify_cert_store(self.as_ptr(), ptr)
-                as c_int)?;
+            cvt(ffi::SSL_CTX_set0_verify_cert_store(self.as_ptr(), ptr) as c_int)?;
             mem::forget(cert_store);
 
             Ok(())
@@ -657,11 +657,7 @@ impl SslContextBuilder {
     ///
     /// This corresponds to `SSL_CTX_set_tmp_ecdh`.
     pub fn set_tmp_ecdh(&mut self, key: &EcKeyRef) -> Result<(), ErrorStack> {
-        unsafe {
-            cvt(ffi::SSL_CTX_set_tmp_ecdh(self.as_ptr(), key.as_ptr())
-                as c_int)
-                .map(|_| ())
-        }
+        unsafe { cvt(ffi::SSL_CTX_set_tmp_ecdh(self.as_ptr(), key.as_ptr()) as c_int).map(|_| ()) }
     }
 
     /// Sets the callback which will generate parameters to be used during ephemeral elliptic curve
@@ -1059,9 +1055,7 @@ impl SslContextBuilder {
                 Box::into_raw(callback) as *mut c_void,
             );
             let f: unsafe extern "C" fn(_, _) -> _ = raw_tlsext_status::<F>;
-            cvt(ffi::SSL_CTX_set_tlsext_status_cb(self.as_ptr(), Some(f))
-                as c_int)
-                .map(|_| ())
+            cvt(ffi::SSL_CTX_set_tlsext_status_cb(self.as_ptr(), Some(f)) as c_int).map(|_| ())
         }
     }
 
@@ -2444,8 +2438,10 @@ mod compat {
     use ffi;
     use libc::c_int;
 
-    pub use ffi::{SSL_CTX_clear_options, SSL_CTX_get_options, SSL_CTX_set_options, SSL_CTX_up_ref,
-                  SSL_SESSION_get_master_key, SSL_SESSION_up_ref, SSL_is_server};
+    pub use ffi::{
+        SSL_CTX_clear_options, SSL_CTX_get_options, SSL_CTX_set_options, SSL_CTX_up_ref,
+        SSL_SESSION_get_master_key, SSL_SESSION_up_ref, SSL_is_server,
+    };
 
     pub unsafe fn get_new_idx(f: ffi::CRYPTO_EX_free) -> c_int {
         ffi::CRYPTO_get_ex_new_index(

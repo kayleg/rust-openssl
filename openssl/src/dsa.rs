@@ -7,15 +7,15 @@
 
 use ffi;
 use foreign_types::ForeignTypeRef;
-use libc::{c_int, c_char, c_void};
+use libc::{c_char, c_int, c_void};
 use std::fmt;
 use std::ptr;
 
-use {cvt, cvt_p};
 use bio::MemBioSlice;
 use bn::BigNumRef;
 use error::ErrorStack;
-use util::{CallbackState, invoke_passwd_cb_old};
+use util::{invoke_passwd_cb_old, CallbackState};
+use {cvt, cvt_p};
 
 foreign_type_and_impl_send_sync! {
     type CType = ffi::DSA;
@@ -191,8 +191,8 @@ impl fmt::Debug for Dsa {
 
 #[cfg(ossl110)]
 mod compat {
-    use std::ptr;
     use ffi::{self, BIGNUM, DSA};
+    use std::ptr;
 
     pub unsafe fn pqg(d: *const DSA) -> [*const BIGNUM; 3] {
         let (mut p, mut q, mut g) = (ptr::null(), ptr::null(), ptr::null());

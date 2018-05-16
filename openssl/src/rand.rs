@@ -10,8 +10,8 @@
 //! let mut buf = [0; 256];
 //! rand_bytes(&mut buf).unwrap();
 //! ```
-use libc::c_int;
 use ffi;
+use libc::c_int;
 
 use cvt;
 use error::ErrorStack;

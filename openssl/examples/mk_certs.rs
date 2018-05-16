@@ -9,10 +9,12 @@ use openssl::error::ErrorStack;
 use openssl::hash::MessageDigest;
 use openssl::pkey::{PKey, PKeyRef};
 use openssl::rsa::Rsa;
+use openssl::x509::extension::{
+    AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName,
+    SubjectKeyIdentifier,
+};
 use openssl::x509::{X509, X509Ref};
 use openssl::x509::{X509NameBuilder, X509Req, X509ReqBuilder};
-use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsage,
-                               SubjectAlternativeName, SubjectKeyIdentifier};
 
 /// Make a CA certificate and private key
 fn mk_ca_cert() -> Result<(X509, PKey), ErrorStack> {
@@ -109,8 +111,8 @@ fn mk_ca_signed_cert(ca_cert: &X509Ref, ca_privkey: &PKeyRef) -> Result<(X509, P
         .key_encipherment()
         .build()?)?;
 
-    let subject_key_identifier = SubjectKeyIdentifier::new()
-        .build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
+    let subject_key_identifier =
+        SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
     let auth_key_identifier = AuthorityKeyIdentifier::new()

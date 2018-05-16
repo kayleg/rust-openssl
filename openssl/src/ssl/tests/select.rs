@@ -1,11 +1,11 @@
-use libc;
 pub use self::imp::*;
+use libc;
 
 #[cfg(unix)]
 mod imp {
-    use std::os::unix::prelude::*;
-    use std::io;
     use libc;
+    use std::io;
+    use std::os::unix::prelude::*;
 
     pub use libc::fd_set;
 
@@ -40,11 +40,11 @@ mod imp {
     extern crate winapi;
     extern crate ws2_32;
 
-    use std::os::windows::prelude::*;
-    use std::io;
-    use libc::{c_uint, c_long};
-    use self::winapi::SOCKET;
     use self::winapi::winsock2;
+    use self::winapi::SOCKET;
+    use libc::{c_long, c_uint};
+    use std::io;
+    use std::os::windows::prelude::*;
 
     pub use self::winapi::winsock2::fd_set;
 

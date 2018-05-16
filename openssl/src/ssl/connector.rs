@@ -3,11 +3,13 @@ use std::ops::{Deref, DerefMut};
 
 use dh::Dh;
 use error::ErrorStack;
-use ssl::{self, HandshakeError, Ssl, SslRef, SslContext, SslContextBuilder, SslMethod, SslStream,
-          SSL_VERIFY_PEER};
 use pkey::PKeyRef;
+use ssl::{
+    self, HandshakeError, Ssl, SslContext, SslContextBuilder, SslMethod, SslRef, SslStream,
+    SSL_VERIFY_PEER,
+};
 use version;
-use x509::X509Ref;
+use x509::{X509, X509Ref};
 
 #[cfg(ossl101)]
 lazy_static! {
@@ -66,6 +68,27 @@ impl SslConnectorBuilder {
     pub fn new(method: SslMethod) -> Result<SslConnectorBuilder, ErrorStack> {
         let mut ctx = ctx(method)?;
         ctx.set_default_verify_paths()?;
+        #[cfg(target_os = "android")]
+        {
+            use std::fs;
+            use std::io::Read;
+
+            let cert_store = ctx.cert_store_mut();
+
+            if let Ok(certs) = fs::read_dir("/system/etc/security/cacerts") {
+                for entry in certs.filter_map(|r| r.ok()).filter(|e| e.path().is_file()) {
+                    let mut cert = String::new();
+                    if let Ok(_) =
+                        fs::File::open(entry.path()).and_then(|mut f| f.read_to_string(&mut cert))
+                    {
+                        if let Ok(cert) = X509::from_pem(cert.as_bytes()) {
+                            try!(cert_store.add_cert(cert));
+                        }
+                    }
+                }
+            }
+        }
+
         // From https://github.com/python/cpython/blob/a170fa162dc03f0a014373349e548954fff2e567/Lib/ssl.py#L193
         ctx.set_cipher_list(
             "TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:\
@@ -74,19 +97,24 @@ impl SslConnectorBuilder {
              ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:RSA+AESGCM:RSA+AES:RSA+HIGH:\
              !aNULL:!eNULL:!MD5:!3DES",
         )?;
-        setup_verify(&mut ctx);
+        //setup_verify(&mut ctx);
+        ctx.set_verify(ssl::SSL_VERIFY_PEER);
 
         Ok(SslConnectorBuilder(ctx))
     }
 
-    #[deprecated(since = "0.9.23",
-                 note = "SslConnectorBuilder now implements Deref<Target=SslContextBuilder>")]
+    #[deprecated(
+        since = "0.9.23",
+        note = "SslConnectorBuilder now implements Deref<Target=SslContextBuilder>"
+    )]
     pub fn builder(&self) -> &SslContextBuilder {
         self
     }
 
-    #[deprecated(since = "0.9.23",
-                 note = "SslConnectorBuilder now implements DerefMut<Target=SslContextBuilder>")]
+    #[deprecated(
+        since = "0.9.23",
+        note = "SslConnectorBuilder now implements DerefMut<Target=SslContextBuilder>"
+    )]
     pub fn builder_mut(&mut self) -> &mut SslContextBuilder {
         self
     }
@@ -149,7 +177,9 @@ impl SslConnector {
         S: Read + Write,
     {
         self.configure()?
-            .danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
+            .danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(
+                stream,
+            )
     }
 
     /// Returns a structure allowing for configuration of a single TLS session before connection.
@@ -162,14 +192,16 @@ impl SslConnector {
 pub struct ConnectConfiguration(Ssl);
 
 impl ConnectConfiguration {
-    #[deprecated(since = "0.9.23",
-                 note = "ConnectConfiguration now implements Deref<Target=SslRef>")]
+    #[deprecated(
+        since = "0.9.23", note = "ConnectConfiguration now implements Deref<Target=SslRef>"
+    )]
     pub fn ssl(&self) -> &Ssl {
         &self.0
     }
 
-    #[deprecated(since = "0.9.23",
-                 note = "ConnectConfiguration now implements DerefMut<Target=SslRef>")]
+    #[deprecated(
+        since = "0.9.23", note = "ConnectConfiguration now implements DerefMut<Target=SslRef>"
+    )]
     pub fn ssl_mut(&mut self) -> &mut Ssl {
         &mut self.0
     }
@@ -321,14 +353,17 @@ impl SslAcceptorBuilder {
         Ok(self)
     }
 
-    #[deprecated(since = "0.9.23",
-                 note = "SslAcceptorBuilder now implements Deref<Target=SslContextBuilder>")]
+    #[deprecated(
+        since = "0.9.23", note = "SslAcceptorBuilder now implements Deref<Target=SslContextBuilder>"
+    )]
     pub fn builder(&self) -> &SslContextBuilder {
         self
     }
 
-    #[deprecated(since = "0.9.23",
-                 note = "SslAcceptorBuilder now implements DerefMut<Target=SslContextBuilder>")]
+    #[deprecated(
+        since = "0.9.23",
+        note = "SslAcceptorBuilder now implements DerefMut<Target=SslContextBuilder>"
+    )]
     pub fn builder_mut(&mut self) -> &mut SslContextBuilder {
         self
     }
@@ -432,8 +467,8 @@ mod verify {
     use std::str;
 
     use nid;
-    use x509::{GeneralName, X509NameRef, X509Ref, X509StoreContextRef};
     use stack::Stack;
+    use x509::{GeneralName, X509NameRef, X509Ref, X509StoreContextRef};
 
     pub fn verify_callback(
         domain: &str,

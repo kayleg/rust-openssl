@@ -1,4 +1,4 @@
-use libc::{c_int, c_char, c_void, c_long, c_uchar, size_t, c_uint, c_ulong, time_t};
+use libc::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_void, size_t, time_t};
 
 use super::*;
 
@@ -29,13 +29,7 @@ pub struct SSL {
     d1: *mut c_void,
     read_ahead: c_int,
     msg_callback: Option<
-        unsafe extern "C" fn(c_int,
-                             c_int,
-                             c_int,
-                             *const c_void,
-                             size_t,
-                             *mut SSL,
-                             *mut c_void),
+        unsafe extern "C" fn(c_int, c_int, c_int, *const c_void, size_t, *mut SSL, *mut c_void),
     >,
     msg_callback_arg: *mut c_void,
     hit: c_int,
